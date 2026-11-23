@@ -30,7 +30,7 @@ def _axis_grid(lo, hi, lo_sing, hi_sing, n, eps, wmin):
         return lo + np.geomspace(eps, L, n)
     if hi_sing:
         return (hi - np.geomspace(eps, L, n))[::-1]
-    d = np.geomspace(wmin, hi, n)                 # sem polos no eixo: segmento contínuo
+    d = np.geomspace(wmin, hi, n)               
     return np.concatenate([-d[::-1], [0.0], d])
 
 
