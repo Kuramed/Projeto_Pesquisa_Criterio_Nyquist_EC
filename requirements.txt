@@ -1,0 +1,7 @@
+numpy>=1.24
+matplotlib>=3.7
+# opcionais:
+scipy>=1.10          # validate.py (validação cruzada)
+control>=0.9         # validate.py (python-control)
+pyserial>=3.5        # ec_hil/hil_host.py --mode serial
+pytest>=7            # python -m pytest -q
