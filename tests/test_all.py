@@ -27,7 +27,7 @@ def _same(a, b, tol=1e-8):
     return True
 
 
-# ---------------------------------------------------------------- polinômios
+#  polinômios
 def test_roots_known():
     r = [-1, -2, -3, 4, -0.5 + 2j, -0.5 - 2j]
     p = np.poly(r)
@@ -51,7 +51,7 @@ def test_pade_first_order():
     assert np.allclose(n, [-1.0, 1.0]) and np.allclose(d, [1.0, 1.0])
 
 
-# ---------------------------------------------------------------- Routh
+#  Routh
 def test_routh_basic():
     assert routh_hurwitz([1, 6, 11, 6]).status == "estável"
     assert routh_hurwitz([1, 6, 11, 100]).status == "instável"
@@ -69,7 +69,7 @@ def test_routh_matches_roots_random():
 
 
 def test_routh_zero_first_column_epsilon():
-    p = [1, 2, 3, 6, 5, 3]                         # caso clássico (Ogata/Nise): 2 raízes no SPD
+    p = [1, 2, 3, 6, 5, 3]                         #(Ogata/Nise): 2 raízes no SPD
     res = routh_hurwitz(p)
     assert res.sign_changes == int(np.sum(np.roots(p).real > 0))
     assert any("epsilon" in s for s in res.special_cases)
@@ -83,12 +83,12 @@ def test_routh_zero_row_marginal():
 
 
 def test_routh_zero_row_unstable():
-    p = np.polymul([1, 0, 1], [1, -1, 1])           # (s²+1)(s²-s+1)  -> 2 raízes no SPD
+    p = np.polymul([1, 0, 1], [1, -1, 1])           # (s²+1)(s²-s+1)  
     res = routh_hurwitz(p)
     assert res.sign_changes == 2 and res.status == "instável"
 
 
-# ---------------------------------------------------------------- Nyquist
+#  Nyquist
 def test_benchmarks_Z():
     for k, b in BENCHMARKS.items():
         r = nyquist_analysis(b["G"], b["K"])
@@ -137,8 +137,8 @@ def test_delay_critical_exact():
 def test_pade_order1_misses_delay_limit():
     G = BENCHMARKS["D"]["G"].with_delay(1.5)         # exato: INSTÁVEL
     assert nyquist_analysis(G, 2.0).Z == 2
-    assert routh_stability(G, 2.0, pade_order=1).status == "estável"    # Padé 1 erra
-    assert routh_stability(G, 2.0, pade_order=6).status == "instável"   # Padé alto acerta
+    assert routh_stability(G, 2.0, pade_order=1).status == "estável"   
+    assert routh_stability(G, 2.0, pade_order=6).status == "instável"   
 
 
 def test_crossing_vs_angle_random_curves():
@@ -149,7 +149,7 @@ def test_crossing_vs_angle_random_curves():
         assert encirclements_crossing(L) == encirclements_angle(L) == -k
 
 
-# ---------------------------------------------------------------- Root locus / Bode / tempo
+#  Root locus / Bode / tempo
 def test_root_locus_features():
     G = BENCHMARKS["A"]["G"]
     K, w = critical_gain(G)
@@ -190,7 +190,7 @@ def test_step_delay_stability_matches_nyquist():
     assert np.max(np.abs(y2[-4000:])) > 5 * np.max(np.abs(y1[-4000:]))
 
 
-# ---------------------------------------------------------------- Trilha EC (HIL)
+#  Trilha EC (HIL)
 def _hil():
     import importlib.util
     path = os.path.join(os.path.dirname(__file__), "..", "ec_hil", "hil_host.py")
@@ -255,7 +255,7 @@ if __name__ == "__main__":
             try:
                 fn()
                 print("PASS", name)
-            except Exception as e:                 # noqa
+            except Exception as e:                 
                 fails += 1
                 print("FAIL", name, "->", repr(e))
     sys.exit(1 if fails else 0)

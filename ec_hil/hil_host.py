@@ -31,10 +31,10 @@ import sys
 import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-from nyqlab import TF, delay_margin, margins, nyquist_analysis   # noqa: E402
-from nyqlab.timesim import tf2ss                                   # noqa: E402
+from nyqlab import TF, delay_margin, margins, nyquist_analysis   
+from nyqlab.timesim import tf2ss                                  
 
-# ------------------------------------------------------------------ configuração
+#  configuração
 PLANTA = TF.from_zpk([], [-1, -2], 2.0)             # G(s) = 2/((s+1)(s+2)), ganho DC = 1
 PID = dict(Kp=6.0, Ki=3.0, Kd=0.8, Tf=0.02)
 TS = 0.01
@@ -46,7 +46,7 @@ def pid_tf(Kp, Ki, Kd, Tf):
     return TF([Kp * Tf + Kd, Kp + Ki * Tf, Ki], [Tf, 1.0, 0.0])
 
 
-# ------------------------------------------------------------------ controladores
+#  controladores
 class PIDPython:
     """Espelho exato do firmware (mesma discretização, anti-windup e saturação)."""
 
@@ -69,7 +69,7 @@ class PIDSerial:
     """PID executado no ESP32/Arduino; o PC apenas troca mensagens de texto."""
 
     def __init__(self, port, baud, Kp, Ki, Kd, Tf, Ts, umax=UMAX, timeout=1.0):
-        import serial                                   # pip install pyserial
+        import serial                                  
         self.ser = serial.Serial(port, baud, timeout=timeout)
         import time
         time.sleep(2.0)                                 # reset automático da placa ao abrir a porta
@@ -98,7 +98,7 @@ class PIDSerial:
         self.ser.close()
 
 
-# ------------------------------------------------------------------ perfis de atraso
+#  perfis de atraso
 def delay_profile(kind, tau0, amp, T, seed=0):
     rng = np.random.default_rng(seed)
     if kind == "const":
@@ -112,7 +112,7 @@ def delay_profile(kind, tau0, amp, T, seed=0):
     raise ValueError(kind)
 
 
-# ------------------------------------------------------------------ malha HIL
+#  malha HIL
 def rk4_hold(A, B, x, u, h):
     f = lambda z: A @ z + B[:, 0] * u
     k1 = f(x); k2 = f(x + 0.5 * h * k1); k3 = f(x + 0.5 * h * k2); k4 = f(x + h * k3)
@@ -130,15 +130,15 @@ def run_loop(ctrl, tau_fn, T=60.0, Ts=TS, r=1.0, plant=PLANTA, sub=10):
     if abs(D) > 0:
         raise ValueError("A planta HIL deve ser estritamente própria.")
     for k in range(n):
-        y[k] = (C @ x).item()                            # amostra a saída da planta
+        y[k] = (C @ x).item()                           
         d = int(round(tau_fn(t[k]) / Ts))
-        d_up, d_dn = d // 2, d - d // 2                  # metade do atraso em cada sentido
-        y_meas = y[k - d_up] if k >= d_up else 0.0       # y chega atrasado ao controlador
+        d_up, d_dn = d // 2, d - d // 2                 
+        y_meas = y[k - d_up] if k >= d_up else 0.0      
         u_calc[k] = ctrl.step(k, r, y_meas)
-        u_app[k] = u_calc[k - d_dn] if k >= d_dn else 0.0   # u chega atrasado à planta
+        u_app[k] = u_calc[k - d_dn] if k >= d_dn else 0.0   
         for _ in range(sub):
             x = rk4_hold(A, B, x, u_app[k], Ts / sub)
-        if abs(y[k]) > 1e6:                              # divergiu
+        if abs(y[k]) > 1e6:                              
             return t[:k + 1], y[:k + 1], u_calc[:k + 1]
     return t, y, u_calc
 
@@ -154,7 +154,7 @@ def classificar(t, y, r=1.0):
     return "instável" if (p2 > 1e-3 and p2 >= 0.98 * p1) else "estável"
 
 
-# ------------------------------------------------------------------ previsão por Nyquist
+#  previsão por Nyquist
 def prever(Ts=TS, extra=None, planta=PLANTA, pid=PID):
     L = pid_tf(**pid) * planta                            # L(s) = C(s) G(s), SEM atraso
     m = margins(L)
@@ -167,7 +167,7 @@ def nyquist_verdict(tau_total, L):
     return nyquist_analysis(L.with_delay(tau_total), 1.0).status
 
 
-# ------------------------------------------------------------------ experimentos
+#  experimentos
 def make_ctrl(args):
     if args.mode == "serial":
         return PIDSerial(args.port, args.baud, Ts=args.Ts, **PID)

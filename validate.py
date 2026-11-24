@@ -11,11 +11,11 @@ from nyqlab import BENCHMARKS, nyquist_analysis, margins, poly_roots
 
 try:
     import scipy.signal as ss
-except ImportError:                                    # pragma: no cover
+except ImportError:                                 
     ss = None
 try:
     import control as ct
-except ImportError:                                    # pragma: no cover
+except ImportError:                                  
     ct = None
 
 
